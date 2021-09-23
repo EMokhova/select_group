@@ -76,8 +76,16 @@ HAVING Track.duration = (SELECT MIN(Track.duration) FROM Track);
 pprint(sel7)
 
 sel8 = connection.execute("""
-SELECT DISTINCT(Album.title), COUNT(Track.id_track) FROM Album
-LEFT JOIN Track ON Album.id_album = Track.id_album
-GROUP BY Album.title;
+SELECT DISTINCT(album.title) from Album
+LEFT JOIN Track ON Track.id_album = Album.id_album
+WHERE Track.id_album in
+    (SELECT id_album FROM Track
+    GROUP BY id_album
+    HAVING COUNT(id_album) = (
+        SELECT COUNT(id_track) FROM Track
+        GROUP BY id_album
+        ORDER BY COUNT
+        LIMIT 1 )
+    )
 """).fetchall()
 pprint(sel8)
